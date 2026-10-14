@@ -58,7 +58,7 @@ export function MobileNavSheet({ open, onClose }: MobileNavSheetProps) {
           ))}
         </nav>
         <div className="mt-auto flex items-center gap-3 border-t border-parchment-deep/40 p-5">
-          <Avatar label={user.avatar} />
+          <Avatar label={user.avatar} src={user.avatarImage} alt={user.displayName} />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-espresso">{user.displayName}</p>
             <p className="truncate text-xs text-espresso/55">@{user.username}</p>

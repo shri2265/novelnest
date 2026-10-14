@@ -48,7 +48,7 @@ export function Sidebar() {
               <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-espresso/45">Still reading</p>
               <div className="flex gap-3">
                 <div className="w-12 shrink-0">
-                  <BookCover cover={book.cover} title={book.title} className="rounded-md" />
+                  <BookCover cover={book.cover} title={book.title} author={book.authorName} src={book.coverImage} className="rounded-md" />
                 </div>
                 <div className="min-w-0">
                   <p className="line-clamp-2 font-serif text-sm font-semibold leading-snug text-espresso">{book.title}</p>
@@ -71,7 +71,7 @@ export function Sidebar() {
           <span className="font-serif text-sm font-semibold text-terracotta">{streak} days</span>
         </div>
         <div className="mt-3 flex items-center gap-2.5 px-1.5">
-          <Avatar label={user.avatar} size="sm" />
+          <Avatar label={user.avatar} src={user.avatarImage} size="sm" alt={user.displayName} />
           <div className="min-w-0">
             <p className="truncate text-xs font-semibold text-espresso">{user.displayName}</p>
             <p className="truncate text-[11px] text-espresso/50">{user.readingMood}</p>

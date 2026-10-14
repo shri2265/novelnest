@@ -59,11 +59,11 @@ export function TopHeader() {
               ) : null}
             </Link>
             <Link to="/profile" className="hidden items-center gap-2.5 rounded-full py-1 pl-1 pr-3 transition-colors hover:bg-parchment/50 sm:flex" aria-label="Profile">
-              <Avatar label={user.avatar} size="sm" />
+              <Avatar label={user.avatar} src={user.avatarImage} size="sm" alt={user.displayName} />
               <span className="hidden text-xs text-espresso/60 md:block">{readingMood}</span>
             </Link>
             <Link to="/profile" className="inline-flex h-10 w-10 items-center justify-center rounded-xl sm:hidden" aria-label="Profile">
-              <Avatar label={user.avatar} size="sm" />
+              <Avatar label={user.avatar} src={user.avatarImage} size="sm" alt={user.displayName} />
             </Link>
           </div>
         </div>

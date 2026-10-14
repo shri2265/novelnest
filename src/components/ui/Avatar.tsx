@@ -2,6 +2,9 @@ interface AvatarProps {
   label: string;
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   online?: boolean;
+  /** Uploaded profile picture. When present it fills the circle; otherwise the initials show. */
+  src?: string;
+  alt?: string;
   className?: string;
 }
 
@@ -27,15 +30,21 @@ function tone(label: string): string {
   return TONES[h];
 }
 
-export function Avatar({ label, size = "md", online, className = "" }: AvatarProps) {
+export function Avatar({ label, size = "md", online, src, alt, className = "" }: AvatarProps) {
   return (
     <span className={`relative inline-flex shrink-0 ${className}`}>
-      <span
-        className={`inline-flex ${SIZES[size]} ${tone(label)} items-center justify-center rounded-full font-serif font-semibold shadow-paper`}
-        aria-hidden
-      >
-        {label}
-      </span>
+      {src ? (
+        <span className={`inline-flex ${SIZES[size]} overflow-hidden rounded-full shadow-paper`}>
+          <img src={src} alt={alt ?? "Profile picture"} className="h-full w-full rounded-full object-cover" />
+        </span>
+      ) : (
+        <span
+          className={`inline-flex ${SIZES[size]} ${tone(label)} items-center justify-center rounded-full font-serif font-semibold shadow-paper`}
+          aria-hidden
+        >
+          {label}
+        </span>
+      )}
       {online !== undefined ? (
         <span
           className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-cream ${

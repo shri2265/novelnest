@@ -147,7 +147,7 @@ export function ShelfSection({
             return (
               <div key={book.id} className="group/row relative w-32 shrink-0">
                 <Link to={`/book/${book.id}`} className="block" aria-label={book.title}>
-                  <BookCover cover={book.cover} title={book.title} className="rounded-lg" />
+                  <BookCover cover={book.cover} title={book.title} author={book.authorName} src={book.coverImage} className="rounded-lg" />
                 </Link>
                 {p && p.progress > 0 ? (
                   <div className="absolute bottom-1 left-1 right-1 rounded bg-espresso/30 p-1 backdrop-blur-sm">

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { AArrowDown, Bookmark, BookOpen, ChevronDown, ChevronLeft, ChevronRight, Settings2, X } from "lucide-react";
+import { AArrowDown, Bookmark, BookOpen, Check, ChevronDown, ChevronLeft, ChevronRight, Settings2, X } from "lucide-react";
 import { useNest, themeClass } from "../store/NestContext";
 import { chaptersFor } from "../data/chapters";
 import type { Book, HighlightColor } from "../types";
@@ -96,6 +96,7 @@ export function ReaderPage() {
     setProgressForBook,
     isBookmarked,
     toggleBookmark,
+    moveBook,
   } = useNest();
 
   const chapters = useMemo(() => (book ? chaptersFor(book) : []), [book]);
@@ -470,7 +471,7 @@ export function ReaderPage() {
           <p className="font-quote text-lg italic opacity-70">
             {(chapter.content[chapter.content.length - 1] ?? "").split(".")[0]}.
           </p>
-          <div className="mt-6 flex items-center justify-center gap-3">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Button
               variant="secondary"
               icon={ChevronLeft}
@@ -484,9 +485,21 @@ export function ReaderPage() {
                 Next chapter <ChevronRight className="h-4 w-4" />
               </Button>
             ) : (
-              <Link to="/highlights" className="inline-flex h-10 items-center gap-2 rounded-full bg-gold px-4 text-sm font-medium text-espresso hover:bg-gold-deep">
-                <BookOpen className="h-4 w-4" /> Back to your nest
-              </Link>
+              <>
+                <Button
+                  variant="secondary"
+                  icon={Check}
+                  onClick={() => {
+                    moveBook(book.id, "finished");
+                    toast("Shelved as finished. Congratulations — that's another one read.");
+                  }}
+                >
+                  Mark as finished
+                </Button>
+                <Link to="/highlights" className="inline-flex h-10 items-center gap-2 rounded-full bg-gold px-4 text-sm font-medium text-espresso hover:bg-gold-deep">
+                  <BookOpen className="h-4 w-4" /> Back to your nest
+                </Link>
+              </>
             )}
           </div>
         </div>

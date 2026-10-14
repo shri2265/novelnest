@@ -16,10 +16,10 @@ import type {
   ThemeId,
   User,
 } from "../types";
-import { INITIAL_HIGHLIGHTS, INITIAL_NOTIFICATIONS, INITIAL_PROGRESS, INITIAL_PUBLICATIONS, INITIAL_SHELVES, INITIAL_STICKER_PLACEMENTS } from "../data/seed";
+import { CURRENT_USER, INITIAL_COMPLETED, INITIAL_HIGHLIGHTS, INITIAL_NOTIFICATIONS, INITIAL_PROGRESS, INITIAL_PUBLICATIONS, INITIAL_SHELVES, INITIAL_STICKER_PLACEMENTS } from "../data/seed";
 import { CHAT_MESSAGES, GROUPS } from "../data/community";
-import { CURRENT_USER } from "../data/seed";
 import { BOOKS } from "../data/books";
+import { loadPersisted, savePersisted, STORAGE_KEYS } from "../lib/persist";
 
 export const DEFAULT_READER_SETTINGS: ReaderSettings = {
   fontSize: 112,
@@ -103,6 +103,8 @@ interface NestValue {
   following: string[];
   toggleFollow: (authorId: string) => void;
   isFollowing: (authorId: string) => boolean;
+  /** ISO timestamps of when each finished book was completed, keyed by book id. */
+  completedAt: Record<string, string>;
   joinedGroups: string[];
   toggleJoinGroup: (groupId: string) => void;
   messagesByGroup: Record<string, ChatMessage[]>;
@@ -116,21 +118,26 @@ interface NestValue {
 const NestContext = createContext<NestValue | null>(null);
 
 export function NestProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User>(CURRENT_USER);
-  const [bookmarks, setBookmarks] = useState<string[]>(["b-the-seamstress-of-tides", "b-on-the-light-of-distant-gardens"]);
-  const [shelves, setShelves] = useState<Shelf[]>(INITIAL_SHELVES);
-  const [highlights, setHighlights] = useState<Highlight[]>(INITIAL_HIGHLIGHTS);
+  const [user, setUser] = useState<User>(() => loadPersisted(STORAGE_KEYS.profile, CURRENT_USER));
+  const [bookmarks, setBookmarks] = useState<string[]>(() =>
+    loadPersisted(STORAGE_KEYS.bookmarks, ["b-the-seamstress-of-tides", "b-on-the-light-of-distant-gardens"])
+  );
+  const [shelves, setShelves] = useState<Shelf[]>(() => loadPersisted(STORAGE_KEYS.shelves, INITIAL_SHELVES));
+  const [highlights, setHighlights] = useState<Highlight[]>(() => loadPersisted(STORAGE_KEYS.highlights, INITIAL_HIGHLIGHTS));
   const [notes, setNotes] = useState<Note[]>([]);
-  const [passageBookmarks, setPassageBookmarks] = useState<Bookmark[]>([
-    { id: "pb-1", bookId: "b-the-lightkeepers-daughter", chapterId: "ch-lkd-1", paragraphIndex: 0, createdAt: "2026-09-20T19:02:00Z" },
-  ]);
+  const [passageBookmarks, setPassageBookmarks] = useState<Bookmark[]>(() =>
+    loadPersisted(STORAGE_KEYS.passageBookmarks, [
+      { id: "pb-1", bookId: "b-the-lightkeepers-daughter", chapterId: "ch-sample-b-the-lightkeepers-daughter", paragraphIndex: 0, createdAt: "2026-09-20T19:02:00Z" },
+    ])
+  );
   const [stickerPlacements, setStickerPlacements] = useState<StickerPlacement[]>(INITIAL_STICKER_PLACEMENTS);
   const [progress, setProgress] = useState<Record<string, { chapterId: string; paragraphIndex: number; progress: number; updatedAt: string }>>(
     Object.fromEntries(INITIAL_PROGRESS.map((p) => [p.bookId, p]))
   );
   const [notifications, setNotifications] = useState<Notification[]>(INITIAL_NOTIFICATIONS);
   const [publications, setPublications] = useState<Publication[]>(INITIAL_PUBLICATIONS);
-  const [following, setFollowing] = useState<string[]>(["a-1", "a-2"]);
+  const [following, setFollowing] = useState<string[]>(() => loadPersisted(STORAGE_KEYS.following, ["a-1", "a-2"]));
+  const [completedAt, setCompletedAt] = useState<Record<string, string>>(() => loadPersisted(STORAGE_KEYS.completedAt, INITIAL_COMPLETED));
   const [joinedGroups, setJoinedGroups] = useState<string[]>(GROUPS.filter((g) => g.isJoined).map((g) => g.id));
   const [messagesByGroup, setMessagesByGroup] = useState<Record<string, ChatMessage[]>>(() =>
     CHAT_MESSAGES.reduce<Record<string, ChatMessage[]>>((acc, m) => {
@@ -144,6 +151,29 @@ export function NestProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem(SAVED_SETTINGS_KEY, JSON.stringify(readerSettings));
   }, [readerSettings]);
+
+  // Persist the reader's own profile and reading data so it survives refreshes.
+  useEffect(() => savePersisted(STORAGE_KEYS.profile, user), [user]);
+  useEffect(() => savePersisted(STORAGE_KEYS.bookmarks, bookmarks), [bookmarks]);
+  useEffect(() => savePersisted(STORAGE_KEYS.shelves, shelves), [shelves]);
+  useEffect(() => savePersisted(STORAGE_KEYS.highlights, highlights), [highlights]);
+  useEffect(() => savePersisted(STORAGE_KEYS.passageBookmarks, passageBookmarks), [passageBookmarks]);
+  useEffect(() => savePersisted(STORAGE_KEYS.following, following), [following]);
+  useEffect(() => savePersisted(STORAGE_KEYS.completedAt, completedAt), [completedAt]);
+
+  // Completion dates follow the "Finished" shelf: recorded when a book joins, dropped when it leaves.
+  const markCompleted = useCallback((bookId: string) => {
+    setCompletedAt((prev) => (prev[bookId] ? prev : { ...prev, [bookId]: new Date().toISOString() }));
+  }, []);
+
+  const unmarkCompleted = useCallback((bookId: string) => {
+    setCompletedAt((prev) => {
+      if (!prev[bookId]) return prev;
+      const next = { ...prev };
+      delete next[bookId];
+      return next;
+    });
+  }, []);
 
   const toggleBookmark = useCallback((bookId: string) => {
     setBookmarks((prev) => (prev.includes(bookId) ? prev.filter((b) => b !== bookId) : [...prev, bookId]));
@@ -163,24 +193,36 @@ export function NestProvider({ children }: { children: ReactNode }) {
 
   const addToShelf = useCallback(
     (shelfId: string, bookId: string) => {
+      const kind = shelves.find((s) => s.id === shelfId)?.kind;
       setShelves((prev) => prev.map((s) => (s.id === shelfId && !s.bookIds.includes(bookId) ? { ...s, bookIds: [...s.bookIds, bookId] } : s)));
+      if (kind === "finished") markCompleted(bookId);
     },
-    []
+    [shelves, markCompleted]
   );
 
-  const removeFromShelf = useCallback((shelfId: string, bookId: string) => {
-    setShelves((prev) => prev.map((s) => (s.id === shelfId ? { ...s, bookIds: s.bookIds.filter((b) => b !== bookId) } : s)));
-  }, []);
+  const removeFromShelf = useCallback(
+    (shelfId: string, bookId: string) => {
+      const kind = shelves.find((s) => s.id === shelfId)?.kind;
+      setShelves((prev) => prev.map((s) => (s.id === shelfId ? { ...s, bookIds: s.bookIds.filter((b) => b !== bookId) } : s)));
+      if (kind === "finished") unmarkCompleted(bookId);
+    },
+    [shelves, unmarkCompleted]
+  );
 
-  const moveBook = useCallback((bookId: string, kind: ShelfKind) => {
-    setShelves((prev) =>
-      prev.map((s) => {
-        if (s.bookIds.includes(bookId)) return { ...s, bookIds: s.bookIds.filter((b) => b !== bookId) };
-        if (s.kind === kind && !s.bookIds.includes(bookId)) return { ...s, bookIds: [...s.bookIds, bookId] };
-        return s;
-      })
-    );
-  }, []);
+  const moveBook = useCallback(
+    (bookId: string, kind: ShelfKind) => {
+      setShelves((prev) =>
+        prev.map((s) => {
+          if (s.bookIds.includes(bookId)) return { ...s, bookIds: s.bookIds.filter((b) => b !== bookId) };
+          if (s.kind === kind && !s.bookIds.includes(bookId)) return { ...s, bookIds: [...s.bookIds, bookId] };
+          return s;
+        })
+      );
+      if (kind === "finished") markCompleted(bookId);
+      else unmarkCompleted(bookId);
+    },
+    [markCompleted, unmarkCompleted]
+  );
 
   const shelfOf = useCallback(
     (bookId: string) => shelves.find((s) => s.bookIds.includes(bookId)),
@@ -323,6 +365,7 @@ export function NestProvider({ children }: { children: ReactNode }) {
       following,
       toggleFollow,
       isFollowing: (authorId: string) => following.includes(authorId),
+      completedAt,
       joinedGroups,
       toggleJoinGroup,
       messagesByGroup,
@@ -332,7 +375,7 @@ export function NestProvider({ children }: { children: ReactNode }) {
       readingMood,
       setReadingMood,
     }),
-    [user, bookmarks, toggleBookmark, shelves, addShelf, renameShelf, removeShelf, addToShelf, removeFromShelf, moveBook, shelfOf, highlights, addHighlight, removeHighlight, notes, addNote, passageBookmarks, addPassageBookmark, removePassageBookmark, stickerPlacements, addStickerPlacement, removeStickerPlacement, progress, setProgressForBook, notifications, markNotificationRead, markAllNotificationsRead, publications, setPublicationStatus, createDraft, publishDraft, following, toggleFollow, joinedGroups, toggleJoinGroup, messagesByGroup, sendMessage, readerSettings, updateReaderSettings, readingMood, setReadingMood, updateUser]
+    [user, bookmarks, toggleBookmark, shelves, addShelf, renameShelf, removeShelf, addToShelf, removeFromShelf, moveBook, shelfOf, highlights, addHighlight, removeHighlight, notes, addNote, passageBookmarks, addPassageBookmark, removePassageBookmark, stickerPlacements, addStickerPlacement, removeStickerPlacement, progress, setProgressForBook, notifications, markNotificationRead, markAllNotificationsRead, publications, setPublicationStatus, createDraft, publishDraft, following, toggleFollow, completedAt, joinedGroups, toggleJoinGroup, messagesByGroup, sendMessage, readerSettings, updateReaderSettings, readingMood, setReadingMood, updateUser]
   );
 
   return <NestContext.Provider value={value}>{children}</NestContext.Provider>;

@@ -117,7 +117,7 @@ export function HomePage() {
                   className="group flex items-center gap-5 rounded-2xl border border-parchment-deep/40 bg-ivory p-4 shadow-paper transition-all hover:-translate-y-0.5 hover:shadow-lift"
                 >
                   <div className="w-20 shrink-0 sm:w-24">
-                    <BookCover cover={book.cover} title={book.title} className="rounded-lg" />
+                    <BookCover cover={book.cover} title={book.title} author={book.authorName} src={book.coverImage} className="rounded-lg" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-[11px] font-medium uppercase tracking-wider text-espresso/40">

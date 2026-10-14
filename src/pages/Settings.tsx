@@ -49,7 +49,14 @@ export function SettingsPage() {
   const [a11yPrefs, setA11yPrefs] = useState({ reducedMotion: false, highContrast: false, underlineLinks: false });
 
   const saveAccount = () => {
-    updateUser({ displayName: form.displayName.trim() || user.displayName, username: form.username.trim() || user.username, location: form.location, bio: form.bio });
+    const username = form.username.trim() || user.username;
+    updateUser({
+      displayName: form.displayName.trim() || user.displayName,
+      username,
+      handle: `@${username.replace(/^@/, "")}`,
+      location: form.location,
+      bio: form.bio,
+    });
     toast("Profile updated. The shelf looks lovely.");
   };
 

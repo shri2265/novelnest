@@ -11,14 +11,14 @@ export const QUOTES: Quote[] = [
     sourceType: "unknown",
   },
   {
-    text: "The sea does not apologise for its gates. It simply opens, depth by depth, and asks the small boats to be brave.",
-    source: "The Lightkeeper's Daughter, ch. 9",
+    text: "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.",
+    source: "Pride and Prejudice",
     sourceType: "novel",
   },
   {
-    text: "Some miracles need only flour, water, salt, and someone who remembers the heat.",
-    source: "Bread & Other Miracles",
-    sourceType: "poem",
+    text: "There is no charm equal to tenderness of heart.",
+    source: "Emma",
+    sourceType: "novel",
   },
   {
     text: "Books are the quietest and most constant of friends; they are the most accessible and wisest of counsellors.",
@@ -26,24 +26,24 @@ export const QUOTES: Quote[] = [
     sourceType: "unknown",
   },
   {
-    text: "Light is only delayed news from somewhere else, and gardens are how we answer it.",
-    source: "On the Light of Distant Gardens",
-    sourceType: "book",
-  },
-  {
-    text: "Maps were invented by people too impatient to wait for the future, and too hopeful to distrust the horizon.",
-    source: "The Map to Nowhere",
+    text: "Only in silence the word, only in dark the light, only in dying life: bright the hawk's flight on the empty sky.",
+    source: "A Wizard of Earthsea",
     sourceType: "novel",
   },
   {
-    text: "A letter is a bridge built from the one side only, on the faith that someone is waiting on the other.",
-    source: "Letters from the Border",
+    text: "It is good to have an end to journey toward; but it is the journey that matters, in the end.",
+    source: "The Left Hand of Darkness",
+    sourceType: "novel",
+  },
+  {
+    text: "You pierce my soul. I am half agony, half hope.",
+    source: "Persuasion",
     sourceType: "letters",
   },
   {
-    text: "There is no friend as loyal as a book.",
-    source: "Written into the spine of a well-worn copy in the Nest",
-    sourceType: "unknown",
+    text: "All that we see or seem is but a dream within a dream.",
+    source: "A Dream Within a Dream",
+    sourceType: "poem",
   },
 ];
 

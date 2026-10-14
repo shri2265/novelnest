@@ -8,6 +8,8 @@ export interface User {
   handle: string;
   displayName: string;
   avatar: string;
+  /** Optional uploaded profile picture, stored as a data URI. Falls back to the initials `avatar`. */
+  avatarImage?: string;
   bio: string;
   location: string;
   joined: string;
@@ -49,6 +51,7 @@ export interface Book {
   pages: number;
   quote: string;
   cover: CoverSpec;
+  coverImage: string;
   isOriginal?: boolean;
 }
 

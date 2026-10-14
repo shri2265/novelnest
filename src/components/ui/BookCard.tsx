@@ -21,7 +21,7 @@ export function BookCard({ book, compact, className = "" }: BookCardProps) {
     <div className={`group relative flex flex-col ${className}`}>
       <div className="relative overflow-hidden rounded-xl shadow-paper transition-transform duration-200 group-hover:-translate-y-1 group-hover:shadow-lift">
         <Link to={`/book/${book.id}`} aria-label={`Open ${book.title}`}>
-          <BookCover cover={book.cover} title={book.title} />
+          <BookCover cover={book.cover} title={book.title} author={book.authorName} src={book.coverImage} hoverZoom />
         </Link>
         <div className="absolute right-2 top-2">
           <BookmarkButton bookId={book.id} />

@@ -119,7 +119,7 @@ export function ExplorePage() {
       {/* Genre filters */}
       <div>
         <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-espresso/40">Filter by genre</label>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2.5">
           <GenreChip
             genre="all"
             active={activeGenres.length === 0}

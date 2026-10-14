@@ -52,7 +52,7 @@ export function BookDetailPage() {
       <section className="grid gap-8 lg:grid-cols-[300px_1fr]">
         <div className="mx-auto w-56 sm:w-64 lg:mx-0 lg:w-full lg:max-w-[300px]">
           <div className="relative">
-            <BookCover cover={book.cover} title={book.title} className="rounded-2xl shadow-lift" />
+            <BookCover cover={book.cover} title={book.title} author={book.authorName} src={book.coverImage} className="rounded-2xl shadow-lift" eager />
             <div className="absolute right-3 top-3">
               <button
                 type="button"
